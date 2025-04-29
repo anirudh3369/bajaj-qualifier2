@@ -61,16 +61,20 @@ const LoginPage: React.FC = () => {
     try {
       const result = await createUser(userData);
       
-      if (result.success) {
-        // Store user data in sessionStorage for form page
+      // Store user data and redirect to form page regardless of whether
+      // the user is new or existing
+      sessionStorage.setItem('userData', JSON.stringify(userData));
+      navigate('/form');
+    } catch (error) {
+      // Only show API errors that are not related to existing users
+      if (!error.message?.includes('User already exists')) {
+        setApiError('Failed to connect to the server. Please try again.');
+        console.error('Login error:', error);
+      } else {
+        // If user exists, still proceed to form page
         sessionStorage.setItem('userData', JSON.stringify(userData));
         navigate('/form');
-      } else {
-        setApiError(result.message);
       }
-    } catch (error) {
-      setApiError('Failed to connect to the server. Please try again.');
-      console.error('Login error:', error);
     } finally {
       setIsLoading(false);
     }
